@@ -1,5 +1,12 @@
 pub trait MazeGenerate {
-    fn generate(self) -> Self;
+    fn generate(&self);
+}
+
+pub enum Direction {
+    Top,
+    Right,
+    Bottom,
+    Left,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -41,6 +48,42 @@ impl Grid {
         }
 
         matrix
+    }
+
+    pub fn get_neighbor_cell(&self, starting_cell: &Cell, dir: Direction) -> Option<Cell> {
+        // (row, col)
+        let index_tuple: (usize, usize) = match dir {
+            Direction::Top => {
+                if starting_cell.y == 0 {
+                    return None;
+                }
+
+                (starting_cell.y - 1, starting_cell.x)
+            }
+            Direction::Right => {
+                if starting_cell.x == self.cols - 1 {
+                    return None;
+                }
+
+                (starting_cell.y, starting_cell.x + 1)
+            }
+            Direction::Bottom => {
+                if starting_cell.y == self.rows - 1 {
+                    return None;
+                }
+
+                (starting_cell.y + 1, starting_cell.x)
+            }
+            Direction::Left => {
+                if starting_cell.x == 0 {
+                    return None;
+                }
+
+                (starting_cell.y, starting_cell.x - 1)
+            }
+        };
+
+        Some(self.matrix[index_tuple.0][index_tuple.1])
     }
 
     pub fn new(rows: usize, cols: usize) -> Self {
