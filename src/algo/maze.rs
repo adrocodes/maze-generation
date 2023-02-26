@@ -1,12 +1,24 @@
 pub trait MazeGenerate {
-    fn generate(&self);
+    fn generate(&mut self);
 }
 
+#[derive(Debug, Copy, Clone)]
 pub enum Direction {
     Top,
     Right,
     Bottom,
     Left,
+}
+
+impl Direction {
+    pub fn opposite(&self) -> Direction {
+        match self {
+            Direction::Top => Direction::Bottom,
+            Direction::Right => Direction::Left,
+            Direction::Bottom => Direction::Top,
+            Direction::Left => Direction::Right,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
