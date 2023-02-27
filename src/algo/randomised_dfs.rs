@@ -1,7 +1,8 @@
 use rand::seq::SliceRandom;
 use std::collections::{HashSet, VecDeque};
 
-use super::maze::{Cell, Direction, Grid, MazeGenerate};
+use super::grid::Grid;
+use super::maze::{Cell, Direction, MazeGenerate};
 
 /// Based off this description and implementation description:
 /// [Wikipedia](https://en.wikipedia.org/wiki/Maze_generation_algorithm#Randomized_depth-first_search)
