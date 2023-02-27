@@ -37,6 +37,10 @@ impl Cell {
             walls: [true, true, true, true],
         }
     }
+
+    pub fn to_visited_id(&self) -> String {
+        format!("{}x{}", self.x, self.y)
+    }
 }
 
 #[derive(Debug, Clone)]

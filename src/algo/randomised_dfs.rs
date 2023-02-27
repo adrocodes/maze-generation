@@ -21,7 +21,7 @@ impl RandomisedDFS {
     fn get_non_visited_neighbor_cells(
         &self,
         cell: &Cell,
-        visited: &HashSet<Cell>,
+        visited: &HashSet<String>,
     ) -> Option<Vec<(Cell, Direction)>> {
         let grid = &self.grid;
 
@@ -54,7 +54,7 @@ impl RandomisedDFS {
                 }
             })
             .filter(|c| {
-                return !visited.contains(&c.0);
+                return !visited.contains(&c.0.to_visited_id());
             })
             .collect::<Vec<_>>();
 
@@ -95,12 +95,12 @@ impl Default for RandomisedDFS {
 impl MazeGenerate for RandomisedDFS {
     fn generate(&mut self) {
         let mut stack = VecDeque::<Cell>::new();
-        let mut visited = HashSet::<Cell>::new();
+        let mut visited = HashSet::<String>::new();
         let mut rng = rand::thread_rng();
 
         // Choose the initial cell, mark it as visited and push it to the stack
         let start_cell = self.grid.matrix[0][0];
-        visited.insert(start_cell);
+        visited.insert(start_cell.to_visited_id());
         stack.push_back(start_cell);
 
         // While the stack is not empty
@@ -112,8 +112,6 @@ impl MazeGenerate for RandomisedDFS {
                 {
                     let neighbor = found_neighbors.choose(&mut rng).unwrap();
 
-                    dbg!(&neighbor.1);
-
                     // Remove the wall between the current cell and the chosen cell
                     self.update_cell_walls(cell, neighbor.1);
                     self.update_cell_walls(neighbor.0, neighbor.1.opposite());
@@ -122,7 +120,7 @@ impl MazeGenerate for RandomisedDFS {
                     stack.push_back(cell);
 
                     // Mark the chosen cell as visited and push it to the stack
-                    visited.insert(neighbor.0);
+                    visited.insert(neighbor.0.to_visited_id());
                     stack.push_back(neighbor.0);
                 }
             }
