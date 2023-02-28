@@ -122,13 +122,12 @@ impl Into<ImageBuffer<Luma<u8>, Vec<u8>>> for Grid {
                             }
                             // Right
                             1 => {
-                                // FIXME: breaks when size is more than 1
                                 for g in 0..gap {
-                                    let offset_x = s + (g - s);
+                                    let offset_x: i32 = s as i32 + (g as i32 - s as i32);
                                     let offset_y = s;
 
                                     let pixel = img.get_pixel_mut(
-                                        top_left_x + offset_x + size,
+                                        top_left_x + offset_x as u32 + size,
                                         top_left_y + offset_y,
                                     );
                                     pixel.0 = [255u8];
@@ -149,13 +148,12 @@ impl Into<ImageBuffer<Luma<u8>, Vec<u8>>> for Grid {
                             }
                             // Left
                             3 => {
-                                // FIXME: breaks when size is more than 1
                                 for g in 0..gap {
-                                    let offset_x = 1 + s + (g - s);
+                                    let offset_x: i32 = 1 + s as i32 + (g as i32 - s as i32);
                                     let offset_y = s;
 
                                     let pixel = img.get_pixel_mut(
-                                        top_left_x - offset_x,
+                                        top_left_x - offset_x as u32,
                                         top_left_y + offset_y,
                                     );
                                     pixel.0 = [255u8];
