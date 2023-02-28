@@ -1,4 +1,5 @@
 mod algo;
+mod graph;
 
 use algo::maze::MazeGenerate;
 
