@@ -6,35 +6,35 @@ pub fn build_offset_getter<T: PartialEq + Sub<u32, Output = T> + Add<u32, Output
     max: (T, T),
 ) -> impl Fn(T, T, Direction) -> Option<(T, T)> {
     move |x: T, y: T, dir: Direction| {
-        // (row, col)
+        // (x, y)
         let index_tuple: (T, T) = match dir {
             Direction::Top => {
                 if y == min.1 {
                     return None;
                 }
 
-                (y - 1, x)
+                (x, y - 1)
             }
             Direction::Right => {
                 if x == max.0 - 1 {
                     return None;
                 }
 
-                (y, x + 1)
+                (x + 1, y)
             }
             Direction::Bottom => {
                 if y == max.1 - 1 {
                     return None;
                 }
 
-                (y + 1, x)
+                (x, y + 1)
             }
             Direction::Left => {
                 if x == min.0 {
                     return None;
                 }
 
-                (y, x - 1)
+                (x - 1, y)
             }
         };
 
