@@ -36,6 +36,10 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> GraphBuilder<T> {
         self
     }
 
+    pub fn add_node(&mut self, node: T) {
+        GraphBuilder::<T>::_insert_node(self, &node);
+    }
+
     fn _insert_edge(builder: &mut GraphBuilder<T>, from: &T, to: &T) {
         let has_from = builder.vertices.contains_key(&from);
         let has_to = builder.vertices.contains_key(&to);
