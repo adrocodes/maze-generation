@@ -8,20 +8,18 @@ use algo::maze::MazeGenerate;
 use image::GenericImageView;
 use util::build_offset_getter;
 
-use crate::algo::maze::Direction;
+use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
-fn is_corridor(walls: [(u32, u32); 4], pixels: &HashMap<(u32, u32), bool>) -> bool {
-    let top = pixels.get(&walls[0]).unwrap_or(&false);
-    let right = pixels.get(&walls[1]).unwrap_or(&false);
-    let bottom = pixels.get(&walls[2]).unwrap_or(&false);
-    let left = pixels.get(&walls[3]).unwrap_or(&false);
+fn is_corridor(walls: [&bool; 4]) -> bool {
+    let left_right = [false, true, false, true];
+    let top_bottom = [true, false, true, false];
+    let walls = walls.map(|b| *b);
 
-    (*top == false && *bottom == false && *right == true && *left == true)
-        || (*top == true && *bottom == true && *right == false && *left == false)
+    walls == left_right || walls == top_bottom
 }
 
 fn main() {
-    let mut maze_algo = algo::RandomisedDFS::from_grid_size(5000, 5000);
+    let mut maze_algo = algo::RandomisedDFS::from_grid_size(10, 10);
     maze_algo.generate();
 
     println!("Maze generated");
@@ -38,6 +36,7 @@ fn main() {
     let di = image.dimensions();
     let offset_getter = build_offset_getter((0, 0), (di.0, di.1));
     let image = image.as_mut_luma8().unwrap();
+    let mut builder = GraphBuilder::<(u32, u32)>::new();
 
     let mut pixel_map = HashMap::<(u32, u32), bool>::new();
     for (x, y, pixel) in image.enumerate_pixels() {
@@ -49,17 +48,30 @@ fn main() {
     for (x, y, pixel) in image.enumerate_pixels_mut() {
         if pixel.0 == [255u8] {
             let walls = [
-                offset_getter(x, y, Direction::Top).unwrap_or((0, 0)),
-                offset_getter(x, y, Direction::Right).unwrap_or((0, 0)),
-                offset_getter(x, y, Direction::Bottom).unwrap_or((0, 0)),
-                offset_getter(x, y, Direction::Left).unwrap_or((0, 0)),
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Right).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Bottom).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Left).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
             ];
 
-            if !is_corridor(walls, &pixel_map) {
+            if !is_corridor(walls) {
                 pixel.0 = [123u8];
+                builder.add_node((x, y));
             }
         }
     }
+
+    let graph = builder.build();
+
+    dbg!(&graph.vertices);
 
     println!("Nodes generated");
 
