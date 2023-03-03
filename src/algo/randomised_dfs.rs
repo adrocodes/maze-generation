@@ -22,7 +22,7 @@ impl RandomisedDFS {
     fn get_non_visited_neighbor_cells(
         &self,
         cell: &Cell,
-        visited: &HashSet<String>,
+        visited: &HashSet<(usize, usize)>,
     ) -> Option<Vec<(Cell, Direction)>> {
         let grid = &self.grid;
 
@@ -96,7 +96,7 @@ impl Default for RandomisedDFS {
 impl MazeGenerate for RandomisedDFS {
     fn generate(&mut self) {
         let mut stack = VecDeque::<Cell>::new();
-        let mut visited = HashSet::<String>::new();
+        let mut visited = HashSet::<(usize, usize)>::new();
         let mut rng = rand::thread_rng();
 
         // Choose the initial cell, mark it as visited and push it to the stack

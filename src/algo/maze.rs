@@ -38,7 +38,7 @@ impl Cell {
         }
     }
 
-    pub fn to_visited_id(&self) -> String {
-        format!("{}x{}", self.x, self.y)
+    pub fn to_visited_id(&self) -> (usize, usize) {
+        (self.x, self.y)
     }
 }
