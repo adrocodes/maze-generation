@@ -10,12 +10,12 @@ use util::build_offset_getter;
 
 use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
-fn is_corridor(walls: [&bool; 4]) -> bool {
+fn is_corridor(floors: [&bool; 4]) -> bool {
     let left_right = [false, true, false, true];
     let top_bottom = [true, false, true, false];
-    let walls = walls.map(|b| *b);
+    let floors = floors.map(|b| *b);
 
-    walls == left_right || walls == top_bottom
+    floors == left_right || floors == top_bottom
 }
 
 fn main() {
@@ -47,7 +47,7 @@ fn main() {
 
     for (x, y, pixel) in image.enumerate_pixels_mut() {
         if pixel.0 == [255u8] {
-            let walls = [
+            let floors = [
                 pixel_map
                     .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
                     .unwrap_or(&false),
@@ -62,7 +62,7 @@ fn main() {
                     .unwrap_or(&false),
             ];
 
-            if !is_corridor(walls) {
+            if !is_corridor(floors) {
                 pixel.0 = [123u8];
                 builder.add_node((x, y));
             }
