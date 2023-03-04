@@ -19,16 +19,16 @@ fn is_corridor(floors: [&bool; 4]) -> bool {
 }
 
 fn main() {
-    let mut maze_algo = algo::RandomisedDFS::from_grid_size(10, 10);
-    maze_algo.generate();
+    // let mut maze_algo = algo::RandomisedDFS::from_grid_size(10, 10);
+    // maze_algo.generate();
 
-    println!("Maze generated");
+    // println!("Maze generated");
 
-    let image = maze_algo.grid.generate_as_image();
+    // let image = maze_algo.grid.generate_as_image();
 
-    image.save("maze.png").unwrap();
+    // image.save("maze.png").unwrap();
 
-    println!("Maze saved");
+    // println!("Maze saved");
 
     let mut image = image::open("maze.png").unwrap();
     println!("Maze image open");
@@ -39,9 +39,10 @@ fn main() {
     let mut builder = GraphBuilder::<(u32, u32)>::new();
 
     let mut pixel_map = HashMap::<(u32, u32), bool>::new();
-    for (x, y, pixel) in image.enumerate_pixels() {
-        if pixel.0 == [255u8] {
+    for (x, y, pixel) in image.enumerate_pixels_mut() {
+        if pixel.0 == [255u8] || pixel.0 == [123u8] {
             pixel_map.insert((x, y), true);
+            pixel.0 = [255u8];
         }
     }
 
@@ -63,15 +64,72 @@ fn main() {
             ];
 
             if !is_corridor(floors) {
-                pixel.0 = [123u8];
                 builder.add_node((x, y));
+            }
+        }
+    }
+
+    for (x, y, pixel) in image.enumerate_pixels_mut() {
+        if pixel.0 == [255u8] {
+            let floors = [
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Right).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Bottom).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
+                pixel_map
+                    .get(&offset_getter(x, y, Direction::Left).unwrap_or((0, 0)))
+                    .unwrap_or(&false),
+            ];
+
+            if x == 7 && y == 5 {
+                println!("beans");
+            }
+
+            if !is_corridor(floors) {
+                let top = *floors[0];
+                let left = *floors[3];
+
+                if top {
+                    let mut top_cell = offset_getter(x, y, Direction::Top);
+
+                    while let Some(cell) = top_cell {
+                        top_cell = offset_getter(cell.0, cell.1, Direction::Top);
+
+                        if !pixel_map.get(&(cell.0, cell.1)).unwrap_or(&false) {
+                            top_cell = None;
+                        } else if builder.vertices.contains_key(&(cell.0, cell.1)) {
+                            builder.add_edge((x, y), (cell.0, cell.1));
+                            top_cell = None;
+                        }
+                    }
+                }
+
+                if left {
+                    let mut left_cell = offset_getter(x, y, Direction::Left);
+
+                    while let Some(cell) = left_cell {
+                        left_cell = offset_getter(cell.0, cell.1, Direction::Left);
+
+                        if !pixel_map.get(&(cell.0, cell.1)).unwrap_or(&false) {
+                            left_cell = None;
+                        } else if builder.vertices.contains_key(&(cell.0, cell.1)) {
+                            builder.add_edge((x, y), (cell.0, cell.1));
+                            left_cell = None;
+                        }
+                    }
+                }
             }
         }
     }
 
     let graph = builder.build();
 
-    dbg!(&graph.vertices);
+    dbg!(&graph.find_path((1, 1), (19, 19)));
 
     println!("Nodes generated");
 
