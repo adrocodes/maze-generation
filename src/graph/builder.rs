@@ -52,9 +52,9 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> GraphBuilder<T> {
             from_vert.insert(to.clone());
         }
 
-        // if let Some(to_vert) = builder.vertices.get_mut(&to) {
-        //     to_vert.insert(from.clone());
-        // }
+        if let Some(to_vert) = builder.vertices.get_mut(&to) {
+            to_vert.insert(from.clone());
+        }
     }
 
     pub fn insert_edge(mut self, from: T, to: T) -> GraphBuilder<T> {
