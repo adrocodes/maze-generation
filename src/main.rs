@@ -19,16 +19,16 @@ fn is_corridor(floors: [&bool; 4]) -> bool {
 }
 
 fn main() {
-    // let mut maze_algo = algo::RandomisedDFS::from_grid_size(10, 10);
-    // maze_algo.generate();
+    let mut maze_algo = algo::RandomisedDFS::from_grid_size(10, 10);
+    maze_algo.generate();
 
-    // println!("Maze generated");
+    println!("Maze generated");
 
-    // let image = maze_algo.grid.generate_as_image();
+    let image = maze_algo.grid.generate_as_image();
 
-    // image.save("maze.png").unwrap();
+    image.save("maze.png").unwrap();
 
-    // println!("Maze saved");
+    println!("Maze saved");
 
     let mut image = image::open("maze.png").unwrap();
     println!("Maze image open");
@@ -103,7 +103,7 @@ fn main() {
                         if !pixel_map.get(&(cell.0, cell.1)).unwrap_or(&false) {
                             top_cell = None;
                         } else if builder.vertices.contains_key(&(cell.0, cell.1)) {
-                            builder.add_edge((x, y), (cell.0, cell.1));
+                            builder.add_edge((cell.0, cell.1), (x, y));
                             top_cell = None;
                         }
                     }
@@ -118,7 +118,7 @@ fn main() {
                         if !pixel_map.get(&(cell.0, cell.1)).unwrap_or(&false) {
                             left_cell = None;
                         } else if builder.vertices.contains_key(&(cell.0, cell.1)) {
-                            builder.add_edge((x, y), (cell.0, cell.1));
+                            builder.add_edge((cell.0, cell.1), (x, y));
                             left_cell = None;
                         }
                     }
@@ -127,11 +127,19 @@ fn main() {
         }
     }
 
-    let graph = builder.build();
-
-    dbg!(&graph.find_path((1, 1), (19, 19)));
-
     println!("Nodes generated");
+
+    let graph = builder.build();
+    let path = &graph.find_path((1, 1), (19, 19));
+
+    println!("Path possibly found");
+
+    if let Some(path) = path {
+        path.iter().for_each(|(x, y)| {
+            let pixel = image.get_pixel_mut(*x, *y);
+            pixel.0 = [80u8];
+        });
+    }
 
     image.save("maze.png").unwrap();
 
