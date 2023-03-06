@@ -130,16 +130,11 @@ fn main() {
     println!("Nodes generated");
 
     let graph = builder.build();
-    let path = &graph.find_path((1, 1), (19, 19));
+    let path = &graph.bfs((1, 1), (19, 19));
+
+    dbg!(&path);
 
     println!("Path possibly found");
-
-    if let Some(path) = path {
-        path.iter().for_each(|(x, y)| {
-            let pixel = image.get_pixel_mut(*x, *y);
-            pixel.0 = [80u8];
-        });
-    }
 
     image.save("maze.png").unwrap();
 
