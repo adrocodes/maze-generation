@@ -8,12 +8,14 @@ use std::{
 #[derive(Debug)]
 pub struct Graph<T: PartialEq + Eq + Hash + Clone + Debug> {
     pub vertices: HashMap<T, HashSet<T>>,
+    pub vertices_v2: Vec<Node<T>>,
 }
 
 #[derive(Debug)]
 pub struct Node<T: PartialEq + Eq + Hash + Clone + Debug> {
     pub value: T,
     pub parent: Option<T>,
+    pub children: Option<Vec<T>>,
 }
 
 impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
@@ -25,6 +27,7 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
         stack.push_front(Node {
             value: start,
             parent: None,
+            children: None,
         });
 
         while !stack.is_empty() {
@@ -39,6 +42,7 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
                                 stack.push_back(Node {
                                     value: w.clone(),
                                     parent: Some(v.value.clone()),
+                                    children: None,
                                 });
                             }
                         }
