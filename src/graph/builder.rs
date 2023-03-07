@@ -5,7 +5,7 @@ use std::{
     hash::Hash,
 };
 
-use super::graph::Graph;
+use super::graph::{Graph, Node};
 
 #[derive(Debug)]
 pub struct GraphBuilder<T: PartialEq + Eq + Hash + Clone + Debug> {
@@ -90,8 +90,19 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> GraphBuilder<T> {
     }
 
     pub fn build(self) -> Graph<T> {
+        let vertices_v2 = self
+            .vertices
+            .iter()
+            .map(|(key, list)| Node {
+                value: key.clone(),
+                parent: None,
+                children: Some(list.iter().map(|n| n.clone()).collect::<Vec<_>>()),
+            })
+            .collect::<Vec<_>>();
+
         Graph {
             vertices: self.vertices,
+            vertices_v2,
         }
     }
 }
