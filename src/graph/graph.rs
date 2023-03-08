@@ -18,7 +18,7 @@ pub struct Node<T: PartialEq + Eq + Hash + Clone + Debug> {
 }
 
 impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
-    pub fn bfs(&self, start: T, end: T) -> Option<(T, Vec<Node<T>>)> {
+    pub fn bfs(&self, start: T, end: T) -> Option<Vec<Node<T>>> {
         let mut stack = VecDeque::<T>::new();
         let mut visited = HashSet::<T>::new();
         let mut path = Vec::<Node<T>>::new();
@@ -34,7 +34,7 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
         while !stack.is_empty() {
             if let Some(v) = stack.pop_front() {
                 if v == end {
-                    return Some((v, path));
+                    return Some(path);
                 } else {
                     if let Some(edges) = self.vertices.get(&v) {
                         for w in edges.iter() {
