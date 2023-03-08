@@ -5,7 +5,8 @@ mod util;
 use std::collections::HashMap;
 
 use algo::maze::MazeGenerate;
-use image::GenericImageView;
+use graph::graph::Node;
+use image::{GenericImageView, ImageBuffer, Luma};
 use util::build_offset_getter;
 
 use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
@@ -18,8 +19,32 @@ fn is_corridor(floors: [&bool; 4]) -> bool {
     floors == left_right || floors == top_bottom
 }
 
+fn find_in_path(path: &Vec<Node<(u32, u32)>>, value: (u32, u32)) -> Option<&Node<(u32, u32)>> {
+    path.iter().find(|n| n.value == value)
+}
+
+fn draw_solution(
+    image: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
+    path: &Vec<Node<(u32, u32)>>,
+    start: (u32, u32),
+) {
+    let mut next = find_in_path(path, start);
+
+    while let Some(node) = next {
+        let mut pixel = image.get_pixel_mut(node.value.0, node.value.1);
+        pixel.0 = [80u8];
+
+        match node.parent {
+            Some(value) => {
+                next = find_in_path(path, value);
+            }
+            None => next = None,
+        };
+    }
+}
+
 fn main() {
-    let mut maze_algo = algo::RandomisedDFS::from_grid_size(10, 10);
+    let mut maze_algo = algo::RandomisedDFS::from_grid_size(1000, 1000);
     maze_algo.generate();
 
     println!("Maze generated");
@@ -40,7 +65,7 @@ fn main() {
 
     let mut pixel_map = HashMap::<(u32, u32), bool>::new();
     for (x, y, pixel) in image.enumerate_pixels_mut() {
-        if pixel.0 == [255u8] || pixel.0 == [123u8] {
+        if pixel.0 == [255u8] || pixel.0 == [80u8] {
             pixel_map.insert((x, y), true);
             pixel.0 = [255u8];
         }
@@ -86,10 +111,6 @@ fn main() {
                     .unwrap_or(&false),
             ];
 
-            if x == 7 && y == 5 {
-                println!("beans");
-            }
-
             if !is_corridor(floors) {
                 let top = *floors[0];
                 let left = *floors[3];
@@ -129,12 +150,19 @@ fn main() {
 
     println!("Nodes generated");
 
+    let end: (u32, u32) = (1999, 1999);
     let graph = builder.build();
-    let path = &graph.bfs((1, 1), (19, 19));
 
-    dbg!(&path);
+    println!("Has end: {:?}", graph.vertices.contains_key(&end));
 
-    println!("Path possibly found");
+    let path = &graph.bfs((1, 1), end);
+
+    if let Some(path) = path {
+        println!("Path found - drawing solution");
+        draw_solution(image, path, end);
+    } else {
+        println!("Path not found");
+    }
 
     image.save("maze.png").unwrap();
 
