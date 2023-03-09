@@ -11,6 +11,12 @@ use util::build_offset_getter;
 
 use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
+const SOLUTION_PATH_COLOUR: [u8; 1] = [100u8];
+const PATH_COLOUR: [u8; 1] = [255u8];
+const MAZE_SIZE: (usize, usize) = (10, 10);
+const STARTING_SPOT: (u32, u32) = (1, 1);
+const ENDING_SPOT: (u32, u32) = (19, 19);
+
 fn is_corridor(floors: [&bool; 4]) -> bool {
     let left_right = [false, true, false, true];
     let top_bottom = [true, false, true, false];
@@ -32,10 +38,23 @@ fn draw_solution(
 
     while let Some(node) = next {
         let mut pixel = image.get_pixel_mut(node.value.0, node.value.1);
-        pixel.0 = [80u8];
+        pixel.0 = SOLUTION_PATH_COLOUR;
 
         match node.parent {
             Some(value) => {
+                let x_range = value.0.min(node.value.0)..value.0.max(node.value.0);
+                let y_range = value.1.min(node.value.1)..value.1.max(node.value.1);
+
+                for x in x_range {
+                    let mut pixel = image.get_pixel_mut(x, node.value.1);
+                    pixel.0 = SOLUTION_PATH_COLOUR;
+                }
+
+                for y in y_range {
+                    let mut pixel = image.get_pixel_mut(node.value.0, y);
+                    pixel.0 = SOLUTION_PATH_COLOUR;
+                }
+
                 next = find_in_path(path, value);
             }
             None => next = None,
@@ -44,7 +63,7 @@ fn draw_solution(
 }
 
 fn main() {
-    let mut maze_algo = algo::RandomisedDFS::from_grid_size(1000, 1000);
+    let mut maze_algo = algo::RandomisedDFS::from_grid_size(MAZE_SIZE.0, MAZE_SIZE.1);
     maze_algo.generate();
 
     println!("Maze generated");
@@ -65,14 +84,14 @@ fn main() {
 
     let mut pixel_map = HashMap::<(u32, u32), bool>::new();
     for (x, y, pixel) in image.enumerate_pixels_mut() {
-        if pixel.0 == [255u8] || pixel.0 == [80u8] {
+        if pixel.0 == PATH_COLOUR || pixel.0 == SOLUTION_PATH_COLOUR {
             pixel_map.insert((x, y), true);
-            pixel.0 = [255u8];
+            pixel.0 = PATH_COLOUR;
         }
     }
 
     for (x, y, pixel) in image.enumerate_pixels_mut() {
-        if pixel.0 == [255u8] {
+        if pixel.0 == PATH_COLOUR {
             let floors = [
                 pixel_map
                     .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
@@ -95,7 +114,7 @@ fn main() {
     }
 
     for (x, y, pixel) in image.enumerate_pixels_mut() {
-        if pixel.0 == [255u8] {
+        if pixel.0 == PATH_COLOUR {
             let floors = [
                 pixel_map
                     .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
@@ -150,16 +169,15 @@ fn main() {
 
     println!("Nodes generated");
 
-    let end: (u32, u32) = (1999, 1999);
     let graph = builder.build();
 
-    println!("Has end: {:?}", graph.vertices.contains_key(&end));
+    println!("Has end: {:?}", graph.vertices.contains_key(&ENDING_SPOT));
 
-    let path = &graph.bfs((1, 1), end);
+    let path = &graph.bfs(STARTING_SPOT, ENDING_SPOT);
 
     if let Some(path) = path {
         println!("Path found - drawing solution");
-        draw_solution(image, path, end);
+        draw_solution(image, path, ENDING_SPOT);
     } else {
         println!("Path not found");
     }
