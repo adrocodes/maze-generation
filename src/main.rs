@@ -14,8 +14,8 @@ use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 const SOLUTION_PATH_COLOUR: [u8; 1] = [100u8];
 const PATH_COLOUR: [u8; 1] = [255u8];
 const MAZE_SIZE: (usize, usize) = (10, 10);
-const STARTING_SPOT: (u32, u32) = (1, 1);
-const ENDING_SPOT: (u32, u32) = (19, 19);
+const STARTING_SPOT: (u32, u32) = (1, 0);
+const ENDING_SPOT: (u32, u32) = ((MAZE_SIZE.0 as u32 * 2) - 1, MAZE_SIZE.1 as u32 * 2);
 
 fn is_corridor(floors: [&bool; 4]) -> bool {
     let left_right = [false, true, false, true];
@@ -62,6 +62,16 @@ fn draw_solution(
     }
 }
 
+fn add_maze_start(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>) {
+    let mut pixel = image.get_pixel_mut(STARTING_SPOT.0, STARTING_SPOT.1);
+    pixel.0 = PATH_COLOUR;
+}
+
+fn add_maze_end(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>) {
+    let mut pixel = image.get_pixel_mut(ENDING_SPOT.0, ENDING_SPOT.1);
+    pixel.0 = PATH_COLOUR;
+}
+
 fn main() {
     let mut maze_algo = algo::RandomisedDFS::from_grid_size(MAZE_SIZE.0, MAZE_SIZE.1);
     maze_algo.generate();
@@ -81,6 +91,9 @@ fn main() {
     let offset_getter = build_offset_getter((0, 0), (di.0, di.1));
     let image = image.as_mut_luma8().unwrap();
     let mut builder = GraphBuilder::<(u32, u32)>::new();
+
+    add_maze_start(image);
+    add_maze_end(image);
 
     let mut pixel_map = HashMap::<(u32, u32), bool>::new();
     for (x, y, pixel) in image.enumerate_pixels_mut() {
