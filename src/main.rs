@@ -13,7 +13,7 @@ use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
 const SOLUTION_PATH_COLOUR: [u8; 1] = [100u8];
 const PATH_COLOUR: [u8; 1] = [255u8];
-const MAZE_SIZE: (usize, usize) = (20, 20);
+const MAZE_SIZE: (usize, usize) = (500, 500);
 const STARTING_SPOT: (u32, u32) = (1, 0);
 const ENDING_SPOT: (u32, u32) = ((MAZE_SIZE.0 as u32 * 2) - 1, MAZE_SIZE.1 as u32 * 2);
 
@@ -24,13 +24,16 @@ fn is_corridor(floors: [bool; 4]) -> bool {
     floors == left_right || floors == top_bottom
 }
 
-fn find_in_path(path: &Vec<Node<(u32, u32)>>, value: (u32, u32)) -> Option<&Node<(u32, u32)>> {
-    path.iter().find(|n| n.value == value)
+fn find_in_path(
+    path: &HashMap<(u32, u32), Node<(u32, u32)>>,
+    value: (u32, u32),
+) -> Option<&Node<(u32, u32)>> {
+    path.get(&value)
 }
 
 fn draw_solution(
     image: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
-    path: &Vec<Node<(u32, u32)>>,
+    path: &HashMap<(u32, u32), Node<(u32, u32)>>,
     start: (u32, u32),
 ) {
     let mut next = find_in_path(path, start);
@@ -194,13 +197,18 @@ fn main() {
 
     let graph = builder.build();
 
+    println!("Number of ndoes: {}", graph.vertices.len());
     println!("Has end: {:?}", graph.vertices.contains_key(&ENDING_SPOT));
 
     let path = &graph.bfs(STARTING_SPOT, ENDING_SPOT);
 
     if let Some(path) = path {
         println!("Path found - drawing solution");
+        println!("Path length: {}", path.len());
+
         draw_solution(image, path, ENDING_SPOT);
+
+        println!("Path completed");
     } else {
         println!("Path not found");
     }
