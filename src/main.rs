@@ -13,14 +13,13 @@ use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
 const SOLUTION_PATH_COLOUR: [u8; 1] = [100u8];
 const PATH_COLOUR: [u8; 1] = [255u8];
-const MAZE_SIZE: (usize, usize) = (10, 10);
+const MAZE_SIZE: (usize, usize) = (20, 20);
 const STARTING_SPOT: (u32, u32) = (1, 0);
 const ENDING_SPOT: (u32, u32) = ((MAZE_SIZE.0 as u32 * 2) - 1, MAZE_SIZE.1 as u32 * 2);
 
-fn is_corridor(floors: [&bool; 4]) -> bool {
+fn is_corridor(floors: [bool; 4]) -> bool {
     let left_right = [false, true, false, true];
     let top_bottom = [true, false, true, false];
-    let floors = floors.map(|b| *b);
 
     floors == left_right || floors == top_bottom
 }
@@ -77,6 +76,56 @@ fn add_maze_end(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>) {
     pixel.0 = PATH_COLOUR;
 }
 
+fn find_neighboring_nodes(
+    builder: &mut GraphBuilder<(u32, u32)>,
+    pixel_map: &HashMap<(u32, u32), bool>,
+    offset_getter: &dyn Fn(u32, u32, Direction) -> Option<(u32, u32)>,
+    x: u32,
+    y: u32,
+    direction: Direction,
+) {
+    let mut offset_cell = offset_getter(x, y, direction);
+
+    while let Some(cell) = offset_cell {
+        offset_cell = offset_getter(cell.0, cell.1, direction);
+
+        if !pixel_map.get(&(cell.0, cell.1)).unwrap_or(&false) {
+            offset_cell = None;
+        } else if builder.vertices.contains_key(&(cell.0, cell.1)) {
+            builder.add_edge((cell.0, cell.1), (x, y));
+            offset_cell = None;
+        }
+    }
+}
+
+fn get_surrounding_floors(
+    pixel_map: &HashMap<(u32, u32), bool>,
+    offset_getter: &dyn Fn(u32, u32, Direction) -> Option<(u32, u32)>,
+    x: u32,
+    y: u32,
+) -> [bool; 4] {
+    let floors = [
+        pixel_map
+            .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
+            .unwrap_or(&false)
+            .clone(),
+        pixel_map
+            .get(&offset_getter(x, y, Direction::Right).unwrap_or((0, 0)))
+            .unwrap_or(&false)
+            .clone(),
+        pixel_map
+            .get(&offset_getter(x, y, Direction::Bottom).unwrap_or((0, 0)))
+            .unwrap_or(&false)
+            .clone(),
+        pixel_map
+            .get(&offset_getter(x, y, Direction::Left).unwrap_or((0, 0)))
+            .unwrap_or(&false)
+            .clone(),
+    ];
+
+    floors
+}
+
 fn main() {
     let mut maze_algo = algo::RandomisedDFS::from_grid_size(MAZE_SIZE.0, MAZE_SIZE.1);
     maze_algo.generate();
@@ -110,20 +159,7 @@ fn main() {
 
     for (x, y, pixel) in image.enumerate_pixels_mut() {
         if pixel.0 == PATH_COLOUR {
-            let floors = [
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Right).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Bottom).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Left).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-            ];
+            let floors = get_surrounding_floors(&pixel_map, &offset_getter, x, y);
 
             if !is_corridor(floors) {
                 builder.add_node((x, y));
@@ -133,53 +169,29 @@ fn main() {
 
     for (x, y, pixel) in image.enumerate_pixels_mut() {
         if pixel.0 == PATH_COLOUR {
-            let floors = [
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Right).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Bottom).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-                pixel_map
-                    .get(&offset_getter(x, y, Direction::Left).unwrap_or((0, 0)))
-                    .unwrap_or(&false),
-            ];
+            let floors = get_surrounding_floors(&pixel_map, &offset_getter, x, y);
 
             if !is_corridor(floors) {
-                let top = *floors[0];
-                let left = *floors[3];
-
-                if top {
-                    let mut top_cell = offset_getter(x, y, Direction::Top);
-
-                    while let Some(cell) = top_cell {
-                        top_cell = offset_getter(cell.0, cell.1, Direction::Top);
-
-                        if !pixel_map.get(&(cell.0, cell.1)).unwrap_or(&false) {
-                            top_cell = None;
-                        } else if builder.vertices.contains_key(&(cell.0, cell.1)) {
-                            builder.add_edge((cell.0, cell.1), (x, y));
-                            top_cell = None;
-                        }
-                    }
+                if floors[0] {
+                    find_neighboring_nodes(
+                        &mut builder,
+                        &pixel_map,
+                        &offset_getter,
+                        x,
+                        y,
+                        Direction::Top,
+                    );
                 }
 
-                if left {
-                    let mut left_cell = offset_getter(x, y, Direction::Left);
-
-                    while let Some(cell) = left_cell {
-                        left_cell = offset_getter(cell.0, cell.1, Direction::Left);
-
-                        if !pixel_map.get(&(cell.0, cell.1)).unwrap_or(&false) {
-                            left_cell = None;
-                        } else if builder.vertices.contains_key(&(cell.0, cell.1)) {
-                            builder.add_edge((cell.0, cell.1), (x, y));
-                            left_cell = None;
-                        }
-                    }
+                if floors[3] {
+                    find_neighboring_nodes(
+                        &mut builder,
+                        &pixel_map,
+                        &offset_getter,
+                        x,
+                        y,
+                        Direction::Left,
+                    );
                 }
             }
         }
