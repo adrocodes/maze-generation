@@ -42,17 +42,22 @@ fn draw_solution(
 
         match node.parent {
             Some(value) => {
-                let x_range = value.0.min(node.value.0)..value.0.max(node.value.0);
-                let y_range = value.1.min(node.value.1)..value.1.max(node.value.1);
+                if value.0 != node.value.0 {
+                    let x_range = value.0.min(node.value.0)..value.0.max(node.value.0);
 
-                for x in x_range {
-                    let mut pixel = image.get_pixel_mut(x, node.value.1);
-                    pixel.0 = SOLUTION_PATH_COLOUR;
+                    for x in x_range {
+                        let mut pixel = image.get_pixel_mut(x, node.value.1);
+                        pixel.0 = SOLUTION_PATH_COLOUR;
+                    }
                 }
 
-                for y in y_range {
-                    let mut pixel = image.get_pixel_mut(node.value.0, y);
-                    pixel.0 = SOLUTION_PATH_COLOUR;
+                if value.1 != node.value.1 {
+                    let y_range = value.1.min(node.value.1)..value.1.max(node.value.1);
+
+                    for y in y_range {
+                        let mut pixel = image.get_pixel_mut(node.value.0, y);
+                        pixel.0 = SOLUTION_PATH_COLOUR;
+                    }
                 }
 
                 next = find_in_path(path, value);
