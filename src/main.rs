@@ -150,6 +150,7 @@ fn main() {
     add_maze_end(image);
 
     let mut pixel_map = HashMap::<(u32, u32), bool>::new();
+
     for (x, y, pixel) in image.enumerate_pixels_mut() {
         if pixel.0 == PATH_COLOUR || pixel.0 == SOLUTION_PATH_COLOUR {
             pixel_map.insert((x, y), true);
@@ -163,15 +164,7 @@ fn main() {
 
             if !is_corridor(floors) {
                 builder.add_node((x, y));
-            }
-        }
-    }
 
-    for (x, y, pixel) in image.enumerate_pixels_mut() {
-        if pixel.0 == PATH_COLOUR {
-            let floors = get_surrounding_floors(&pixel_map, &offset_getter, x, y);
-
-            if !is_corridor(floors) {
                 if floors[0] {
                     find_neighboring_nodes(
                         &mut builder,
