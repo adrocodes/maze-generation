@@ -11,6 +11,8 @@ use util::build_offset_getter;
 
 type Point = (u32, u32);
 type Path = HashMap<Point, Node<Point>>;
+type MazeImage = ImageBuffer<Luma<u8>, Vec<u8>>;
+type Floors = [bool; 4];
 
 use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
@@ -20,7 +22,7 @@ const MAZE_SIZE: (usize, usize) = (500, 500);
 const STARTING_SPOT: Point = (1, 0);
 const ENDING_SPOT: Point = ((MAZE_SIZE.0 as u32 * 2) - 1, MAZE_SIZE.1 as u32 * 2);
 
-fn is_corridor(floors: [bool; 4]) -> bool {
+fn is_corridor(floors: Floors) -> bool {
     let left_right = [false, true, false, true];
     let top_bottom = [true, false, true, false];
 
@@ -31,7 +33,7 @@ fn find_in_path(path: &Path, value: Point) -> Option<&Node<Point>> {
     path.get(&value)
 }
 
-fn draw_solution(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>, path: &Path, start: Point) {
+fn draw_solution(image: &mut MazeImage, path: &Path, start: Point) {
     let mut next = find_in_path(path, start);
 
     while let Some(node) = next {
@@ -65,12 +67,12 @@ fn draw_solution(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>, path: &Path, start:
     }
 }
 
-fn add_maze_start(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>) {
+fn add_maze_start(image: &mut MazeImage) {
     let mut pixel = image.get_pixel_mut(STARTING_SPOT.0, STARTING_SPOT.1);
     pixel.0 = PATH_COLOUR;
 }
 
-fn add_maze_end(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>) {
+fn add_maze_end(image: &mut MazeImage) {
     let mut pixel = image.get_pixel_mut(ENDING_SPOT.0, ENDING_SPOT.1);
     pixel.0 = PATH_COLOUR;
 }
@@ -102,7 +104,7 @@ fn get_surrounding_floors(
     offset_getter: &dyn Fn(u32, u32, Direction) -> Option<Point>,
     x: u32,
     y: u32,
-) -> [bool; 4] {
+) -> Floors {
     let floors = [
         pixel_map
             .get(&offset_getter(x, y, Direction::Top).unwrap_or((0, 0)))
