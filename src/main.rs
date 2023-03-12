@@ -9,13 +9,16 @@ use graph::graph::Node;
 use image::{GenericImageView, ImageBuffer, Luma};
 use util::build_offset_getter;
 
+type Point = (u32, u32);
+type Path = HashMap<Point, Node<Point>>;
+
 use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
 const SOLUTION_PATH_COLOUR: [u8; 1] = [100u8];
 const PATH_COLOUR: [u8; 1] = [255u8];
 const MAZE_SIZE: (usize, usize) = (500, 500);
-const STARTING_SPOT: (u32, u32) = (1, 0);
-const ENDING_SPOT: (u32, u32) = ((MAZE_SIZE.0 as u32 * 2) - 1, MAZE_SIZE.1 as u32 * 2);
+const STARTING_SPOT: Point = (1, 0);
+const ENDING_SPOT: Point = ((MAZE_SIZE.0 as u32 * 2) - 1, MAZE_SIZE.1 as u32 * 2);
 
 fn is_corridor(floors: [bool; 4]) -> bool {
     let left_right = [false, true, false, true];
@@ -24,18 +27,11 @@ fn is_corridor(floors: [bool; 4]) -> bool {
     floors == left_right || floors == top_bottom
 }
 
-fn find_in_path(
-    path: &HashMap<(u32, u32), Node<(u32, u32)>>,
-    value: (u32, u32),
-) -> Option<&Node<(u32, u32)>> {
+fn find_in_path(path: &Path, value: Point) -> Option<&Node<Point>> {
     path.get(&value)
 }
 
-fn draw_solution(
-    image: &mut ImageBuffer<Luma<u8>, Vec<u8>>,
-    path: &HashMap<(u32, u32), Node<(u32, u32)>>,
-    start: (u32, u32),
-) {
+fn draw_solution(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>, path: &Path, start: Point) {
     let mut next = find_in_path(path, start);
 
     while let Some(node) = next {
@@ -80,9 +76,9 @@ fn add_maze_end(image: &mut ImageBuffer<Luma<u8>, Vec<u8>>) {
 }
 
 fn find_neighboring_nodes(
-    builder: &mut GraphBuilder<(u32, u32)>,
-    pixel_map: &HashMap<(u32, u32), bool>,
-    offset_getter: &dyn Fn(u32, u32, Direction) -> Option<(u32, u32)>,
+    builder: &mut GraphBuilder<Point>,
+    pixel_map: &HashMap<Point, bool>,
+    offset_getter: &dyn Fn(u32, u32, Direction) -> Option<Point>,
     x: u32,
     y: u32,
     direction: Direction,
@@ -102,8 +98,8 @@ fn find_neighboring_nodes(
 }
 
 fn get_surrounding_floors(
-    pixel_map: &HashMap<(u32, u32), bool>,
-    offset_getter: &dyn Fn(u32, u32, Direction) -> Option<(u32, u32)>,
+    pixel_map: &HashMap<Point, bool>,
+    offset_getter: &dyn Fn(u32, u32, Direction) -> Option<Point>,
     x: u32,
     y: u32,
 ) -> [bool; 4] {
@@ -147,12 +143,12 @@ fn main() {
     let di = image.dimensions();
     let offset_getter = build_offset_getter((0, 0), (di.0, di.1));
     let image = image.as_mut_luma8().unwrap();
-    let mut builder = GraphBuilder::<(u32, u32)>::new();
+    let mut builder = GraphBuilder::<Point>::new();
 
     add_maze_start(image);
     add_maze_end(image);
 
-    let mut pixel_map = HashMap::<(u32, u32), bool>::new();
+    let mut pixel_map = HashMap::<Point, bool>::new();
 
     for (x, y, pixel) in image.enumerate_pixels_mut() {
         if pixel.0 == PATH_COLOUR || pixel.0 == SOLUTION_PATH_COLOUR {
