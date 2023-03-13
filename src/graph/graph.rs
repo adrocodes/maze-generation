@@ -63,7 +63,12 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
         None
     }
 
-    pub fn astar(&mut self, start: T, end: T) -> Option<HashMap<T, Node<T>>> {
+    pub fn astar(
+        &mut self,
+        start: T,
+        end: T,
+        distance_fn: &dyn Fn(T, T) -> i32,
+    ) -> Option<HashMap<T, Node<T>>> {
         None
     }
 }
