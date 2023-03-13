@@ -127,6 +127,10 @@ fn get_surrounding_floors(
     floors
 }
 
+fn manhattan_distance(p1: Point, p2: Point) -> i32 {
+    (p1.0 as i32 - p2.0 as i32) + (p1.1 as i32 - p2.1 as i32)
+}
+
 fn main() {
     let mut maze_algo = algo::RandomisedDFS::from_grid_size(MAZE_SIZE.0, MAZE_SIZE.1);
     maze_algo.generate();
@@ -193,12 +197,14 @@ fn main() {
 
     println!("Nodes generated");
 
-    let graph = builder.build();
+    let mut graph = builder.build();
 
     println!("Number of ndoes: {}", graph.vertices.len());
     println!("Has end: {:?}", graph.vertices.contains_key(&ENDING_SPOT));
 
-    let path = &graph.bfs(STARTING_SPOT, ENDING_SPOT);
+    // let path = &graph.bfs(STARTING_SPOT, ENDING_SPOT);
+
+    let path = &graph.astar(STARTING_SPOT, ENDING_SPOT, &manhattan_distance);
 
     if let Some(path) = path {
         println!("Path found - drawing solution");
