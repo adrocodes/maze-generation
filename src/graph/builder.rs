@@ -92,6 +92,7 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> GraphBuilder<T> {
     pub fn build(self) -> Graph<T> {
         Graph {
             vertices: self.vertices,
+            path: None,
         }
     }
 }

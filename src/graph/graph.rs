@@ -8,6 +8,7 @@ use std::{
 #[derive(Debug)]
 pub struct Graph<T: PartialEq + Eq + Hash + Clone + Debug> {
     pub vertices: HashMap<T, HashSet<T>>,
+    pub path: Option<HashMap<T, Node<T>>>,
 }
 
 #[derive(Debug)]
@@ -59,6 +60,10 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
             }
         }
 
+        None
+    }
+
+    pub fn astar(&mut self, start: T, end: T) -> Option<HashMap<T, Node<T>>> {
         None
     }
 }
