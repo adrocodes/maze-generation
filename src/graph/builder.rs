@@ -9,11 +9,11 @@ use std::{
 use super::graph::{Graph, Node};
 
 #[derive(Debug)]
-pub struct GraphBuilder<T: PartialEq + Eq + Hash + Clone + Debug> {
+pub struct GraphBuilder<T: PartialEq + Eq + Hash + Clone + Debug + Ord> {
     pub vertices: HashMap<T, HashSet<T>>,
 }
 
-impl<T: PartialEq + Eq + Hash + Clone + Debug> Default for GraphBuilder<T> {
+impl<T: PartialEq + Eq + Hash + Clone + Debug + Ord> Default for GraphBuilder<T> {
     fn default() -> Self {
         GraphBuilder {
             vertices: HashMap::new(),
@@ -21,7 +21,7 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> Default for GraphBuilder<T> {
     }
 }
 
-impl<T: PartialEq + Eq + Hash + Clone + Debug> GraphBuilder<T> {
+impl<T: PartialEq + Eq + Hash + Clone + Debug + Ord> GraphBuilder<T> {
     pub fn new() -> Self {
         GraphBuilder::default()
     }
