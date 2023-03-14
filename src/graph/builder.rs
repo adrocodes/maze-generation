@@ -1,4 +1,5 @@
 use std::{
+    cell::RefCell,
     cmp::{Eq, PartialEq},
     collections::{HashMap, HashSet},
     fmt::Debug,
@@ -92,7 +93,7 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> GraphBuilder<T> {
     pub fn build(self) -> Graph<T> {
         Graph {
             vertices: self.vertices,
-            path: None,
+            path: RefCell::new(HashMap::<T, Node<T>>::new()),
         }
     }
 }

@@ -1,14 +1,17 @@
 use std::{
+    cell::{Ref, RefCell},
     cmp::{Eq, PartialEq},
     collections::{HashMap, HashSet, VecDeque},
     fmt::Debug,
     hash::Hash,
 };
 
+type Path<T> = HashMap<T, Node<T>>;
+
 #[derive(Debug)]
 pub struct Graph<T: PartialEq + Eq + Hash + Clone + Debug> {
     pub vertices: HashMap<T, HashSet<T>>,
-    pub path: Option<HashMap<T, Node<T>>>,
+    pub path: RefCell<Path<T>>,
 }
 
 #[derive(Debug)]
@@ -18,8 +21,15 @@ pub struct Node<T: PartialEq + Eq + Hash + Clone + Debug> {
     pub children: Option<Vec<T>>,
 }
 
-impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
-    pub fn bfs(&self, start: T, end: T) -> Option<HashMap<T, Node<T>>> {
+impl<T> Graph<T>
+where
+    T: PartialEq + Eq + Hash + Clone + Debug,
+{
+    pub fn get_path(&self) -> Ref<Path<T>> {
+        self.path.borrow()
+    }
+
+    pub fn bfs(&self, start: T, end: T) -> Option<Path<T>> {
         let mut stack = VecDeque::<T>::new();
         let mut visited = HashSet::<T>::new();
         let mut map_path = HashMap::<T, Node<T>>::new();
@@ -63,12 +73,16 @@ impl<T: PartialEq + Eq + Hash + Clone + Debug> Graph<T> {
         None
     }
 
-    pub fn astar(
-        &mut self,
-        start: T,
-        end: T,
-        distance_fn: &dyn Fn(T, T) -> i32,
-    ) -> Option<HashMap<T, Node<T>>> {
-        None
+    /// Based on https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode
+    pub fn astar(&self, start: T, end: T, heuristic_fn: &dyn Fn(T, T) -> i32) {
+        // create a priority queue with only start in it
+
+        // create a mut hashmap for gScore
+        // set start value 0
+
+        // create a mut hashmap for fScore
+        // set start to h(start, end)
+
+        // while priority queue isn't empty
     }
 }
