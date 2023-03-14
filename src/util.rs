@@ -42,9 +42,9 @@ pub fn build_offset_getter<T: PartialEq + Sub<u32, Output = T> + Add<u32, Output
     }
 }
 
+#[cfg(test)]
 mod test {
-    use super::build_offset_getter;
-    use crate::algo::maze::Direction;
+    use super::*;
 
     #[test]
     fn test_top_corner() {
