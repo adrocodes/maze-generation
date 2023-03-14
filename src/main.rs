@@ -197,25 +197,20 @@ fn main() {
 
     println!("Nodes generated");
 
-    let mut graph = builder.build();
+    let graph = builder.build();
 
     println!("Number of ndoes: {}", graph.vertices.len());
     println!("Has end: {:?}", graph.vertices.contains_key(&ENDING_SPOT));
 
     // let path = &graph.bfs(STARTING_SPOT, ENDING_SPOT);
 
-    let path = &graph.astar(STARTING_SPOT, ENDING_SPOT, &manhattan_distance);
+    graph.astar(STARTING_SPOT, ENDING_SPOT, &manhattan_distance);
+    let path = graph.get_path();
 
-    if let Some(path) = path {
-        println!("Path found - drawing solution");
-        println!("Path length: {}", path.len());
+    println!("Path found - drawing solution");
+    println!("Path length: {}", path.len());
 
-        draw_solution(image, path, ENDING_SPOT);
-
-        println!("Path completed");
-    } else {
-        println!("Path not found");
-    }
+    draw_solution(image, &path, ENDING_SPOT);
 
     image.save("maze.png").unwrap();
 
