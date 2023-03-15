@@ -57,6 +57,7 @@ where
     }
 
     pub fn bfs(&self, start: T, end: T) -> Option<Path<T>> {
+        let mut nodes_checked = 0;
         let mut stack = VecDeque::<T>::new();
         let mut visited = HashSet::<T>::new();
         let mut map_path = HashMap::<T, Node<T>>::new();
@@ -73,8 +74,10 @@ where
         );
 
         while !stack.is_empty() {
+            nodes_checked += 1;
             if let Some(v) = stack.pop_front() {
                 if v == end {
+                    println!("Nodes Checked: {}", nodes_checked);
                     return Some(map_path);
                 } else {
                     if let Some(edges) = self.vertices.get(&v) {
@@ -101,16 +104,57 @@ where
     }
 
     /// Based on https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode
-    pub fn astar(&self, start: T, end: T, heuristic_fn: &dyn Fn(T, T) -> i32) {
-        // create a priority queue with only start in it
+    pub fn astar(
+        &self,
+        start: T,
+        end: T,
+        heuristic_fn: &dyn Fn(&T, &T) -> i32,
+        distance_fn: &dyn Fn(&T, &T) -> i32,
+    ) {
+        let mut nodes_checked = 0;
         let mut queue = BinaryHeap::<QueueItem<T>>::new();
 
-        // create a mut hashmap for gScore
-        // set start value 0
+        let mut g_score = HashMap::<T, i32>::new();
+        g_score.insert(start.clone(), 0);
 
-        // create a mut hashmap for fScore
-        // set start to h(start, end)
+        queue.push(QueueItem {
+            cost: *g_score.get(&start).unwrap_or(&0),
+            position: start.clone(),
+        });
 
-        // while priority queue isn't empty
+        while let Some(QueueItem { cost: _, position }) = queue.pop() {
+            nodes_checked += 1;
+            if position == end {
+                break;
+            }
+
+            if let Some(edges) = self.vertices.get(&position) {
+                for neighbor in edges.iter() {
+                    let current_g_score = *g_score.get(&position).unwrap();
+                    let tentative_g_score = current_g_score + distance_fn(&position, &neighbor);
+
+                    if tentative_g_score < *g_score.get(&neighbor).unwrap_or(&i32::MAX) {
+                        let mut path = self.path.borrow_mut();
+                        path.insert(
+                            neighbor.clone(),
+                            Node {
+                                value: neighbor.clone(),
+                                parent: Some(position.clone()),
+                                children: None,
+                            },
+                        );
+
+                        g_score.insert(neighbor.clone(), tentative_g_score);
+
+                        queue.push(QueueItem {
+                            cost: tentative_g_score + heuristic_fn(&neighbor, &end),
+                            position: neighbor.clone(),
+                        })
+                    }
+                }
+            }
+        }
+
+        println!("Nodes Checked: {}", nodes_checked);
     }
 }
