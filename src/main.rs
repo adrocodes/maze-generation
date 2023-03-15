@@ -18,7 +18,7 @@ use crate::{algo::maze::Direction, graph::builder::GraphBuilder};
 
 const SOLUTION_PATH_COLOUR: [u8; 1] = [100u8];
 const PATH_COLOUR: [u8; 1] = [255u8];
-const MAZE_SIZE: (usize, usize) = (500, 500);
+const MAZE_SIZE: (usize, usize) = (100, 100);
 const STARTING_SPOT: Point = (1, 0);
 const ENDING_SPOT: Point = ((MAZE_SIZE.0 as u32 * 2) - 1, MAZE_SIZE.1 as u32 * 2);
 
@@ -127,8 +127,12 @@ fn get_surrounding_floors(
     floors
 }
 
-fn manhattan_distance(p1: Point, p2: Point) -> i32 {
-    (p1.0 as i32 - p2.0 as i32) + (p1.1 as i32 - p2.1 as i32)
+fn manhattan_distance(p1: &Point, p2: &Point) -> i32 {
+    ((p1.0 as i32 - p2.0 as i32) + (p1.1 as i32 - p2.1 as i32)).abs()
+}
+
+fn distance_fn(_: &Point, _: &Point) -> i32 {
+    1
 }
 
 fn main() {
@@ -204,7 +208,19 @@ fn main() {
 
     // let path = &graph.bfs(STARTING_SPOT, ENDING_SPOT);
 
-    graph.astar(STARTING_SPOT, ENDING_SPOT, &manhattan_distance);
+    // if let Some(path) = path {
+    //     println!("Path found - drawing solution");
+    //     println!("Path length: {}", path.len());
+
+    //     draw_solution(image, &path, ENDING_SPOT);
+    // }
+
+    graph.astar(
+        STARTING_SPOT,
+        ENDING_SPOT,
+        &manhattan_distance,
+        &distance_fn,
+    );
     let path = graph.get_path();
 
     println!("Path found - drawing solution");
