@@ -203,7 +203,7 @@ fn main() {
 
     let graph = builder.build();
 
-    println!("Number of ndoes: {}", graph.vertices.len());
+    println!("Number of nodes: {}", graph.vertices.len());
     println!("Has end: {:?}", graph.vertices.contains_key(&ENDING_SPOT));
 
     // let path = &graph.bfs(STARTING_SPOT, ENDING_SPOT);
